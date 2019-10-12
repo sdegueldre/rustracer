@@ -1,11 +1,12 @@
 use rustracer::pixel::Pixel;
-use rustracer::vec3::Vec3;
+use rustracer::vec3::*;
 use rustracer::ray::Ray;
 use rustracer::sphere::Sphere;
 use rustracer::hittable::Hittable;
 use rustracer::hitlist::HitList;
 
-fn color(r: &Ray) -> Pixel {
+fn color(r: &Ray, nb_bounce: u32) -> Pixel {
+    const n_samples: u32 = 50;
     let white_vector = Vec3::new(1.0, 1.0, 1.0);
     let sky_color = Vec3::new(0.5, 0.7, 1.0);
 
@@ -25,11 +26,16 @@ fn color(r: &Ray) -> Pixel {
 
     let hit = hitlist.hit(&r);
     if hit.hit {
-        return Pixel::new(
-            hit.normal.x/2.0+0.5,
-            hit.normal.y/2.0+0.5,
-            hit.normal.z/2.0+0.5
-        );
+        if nb_bounce > 5 {
+            return Pixel::new(0.0, 0.0, 0.0);
+        }
+        let hit_point = r.point_at(hit.t_value);
+        let mut colors: Vec<Pixel> = Vec::new();
+        for i in 0..n_samples/(nb_bounce*nb_bounce + 1) {
+            let bounce_ray = Ray::new(hit_point, hit.normal + random_unit_vector());
+            colors.push(color(&bounce_ray, nb_bounce + 1));
+        }
+        return 0.5 * average(&colors);
     } else {
         let t = 0.5*(r.direction.y + 1.0);
         let color_vector = white_vector*(1.0-t) + sky_color*t;
@@ -62,7 +68,7 @@ fn main() {
             let u = x as f32 / WIDTH as f32; // Screen x
             let v = y as f32 / HEIGHT as f32; // Screen y
             let r = Ray::new(origin, lower_left_corner + horizontal*u + vertical*v);
-            pixels[HEIGHT-y-1].push(color(&r));
+            pixels[HEIGHT-y-1].push(color(&r, 0));
         }
     }
     write_ppm(pixels);

@@ -1,8 +1,20 @@
+use rand::distributions::{Normal, Distribution};
+
 #[derive(Copy, Clone)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
+}
+
+pub fn random_unit_vector() -> Vec3 {
+    let normal = Normal::new(0.0, 1.0);
+    let mut rng = rand::thread_rng();
+    Vec3::new(
+        normal.sample(&mut rng) as f32,
+        normal.sample(&mut rng) as f32,
+        normal.sample(&mut rng) as f32
+    ).normalize()
 }
 
 impl Vec3 {
