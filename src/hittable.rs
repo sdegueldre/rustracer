@@ -4,6 +4,7 @@ use crate::vec3::Vec3;
 pub struct HitRec {
     pub hit: bool,
     pub normal: Vec3,
+    pub t_value: f32,
 }
 
 pub trait Hittable {

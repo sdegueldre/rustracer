@@ -3,3 +3,4 @@ pub mod ray;
 pub mod sphere;
 pub mod pixel;
 pub mod vec3;
+pub mod hitlist;
