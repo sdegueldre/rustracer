@@ -1,12 +1,8 @@
-mod pixel;
-mod vec3;
-mod ray;
-mod sphere;
-
-use pixel::Pixel;
-use vec3::Vec3;
-use ray::Ray;
-use sphere::Sphere;
+use rustracer::pixel::Pixel;
+use rustracer::vec3::Vec3;
+use rustracer::ray::Ray;
+use rustracer::sphere::Sphere;
+use rustracer::hittable::Hittable;
 
 fn color(r: &Ray) -> Pixel {
     let red = Pixel::new(1.0, 0.0, 0.0);
@@ -18,13 +14,12 @@ fn color(r: &Ray) -> Pixel {
         radius: 0.5,
     };
 
-    let t = s.hit(&r);
-    if t > 0.0 {
-        let normal = (r.point_at(t) - s.center).normalize();
+    let hit = s.hit(&r);
+    if hit.hit {
         return Pixel::new(
-            normal.x/2.0+0.5,
-            normal.y/2.0+0.5,
-            normal.z/2.0+0.5
+            hit.normal.x/2.0+0.5,
+            hit.normal.y/2.0+0.5,
+            hit.normal.z/2.0+0.5
         );
     } else {        
         let t = 0.5*(r.direction.y + 1.0);
