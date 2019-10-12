@@ -1,6 +1,3 @@
-extern crate rand;
-use rand::Rng;
-
 mod pixel;
 mod vec3;
 mod ray;
@@ -12,43 +9,52 @@ use ray::Ray;
 use sphere::Sphere;
 
 fn color(r: &Ray) -> Pixel {
+    let red = Pixel::new(1.0, 0.0, 0.0);
     let white_vector = Vec3::new(1.0, 1.0, 1.0);
     let sky_color = Vec3::new(0.5, 0.7, 1.0);
-    
-    let t = 0.5*(r.direction.y + 1.0);
-    let color_vector = white_vector*(1.0-t) + sky_color*t;
-    Pixel::new(color_vector.x, color_vector.y, color_vector.z)
+
+    let s = Sphere {
+        center: Vec3::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+    };
+
+    let t = s.hit(&r);
+    if t > 0.0 {
+        let normal = (r.point_at(t) - s.center).normalize();
+        return Pixel::new(
+            normal.x/2.0+0.5,
+            normal.y/2.0+0.5,
+            normal.z/2.0+0.5
+        );
+    } else {        
+        let t = 0.5*(r.direction.y + 1.0);
+        let color_vector = white_vector*(1.0-t) + sky_color*t;
+        return Pixel::new(color_vector.x, color_vector.y, color_vector.z)
+    }
 }
 
 fn main() {
     const WIDTH: usize = 1920;
     const HEIGHT: usize = 1080;
-    let red = Pixel::new(1.0, 0.0, 0.0);
-    
+
     let lower_left_corner = Vec3::new(-1.920, -1.080, -1.0);
     let horizontal = Vec3::new(1.920 * 2.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 1.080 * 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
-    
-    let s = Sphere {
-        center: Vec3::new(0.0, 0.0, 1.0),
-        radius: 0.5,
-    };
-    
+
     let mut pixels: Vec<Vec<Pixel>> = vec!();
-    let mut rng = rand::thread_rng();
-    for y in (0..HEIGHT+1).rev() {
+    for y in (0..HEIGHT).rev() {
         pixels.push(vec!());
-        for x in 0..WIDTH+1 {
+        for x in 0..WIDTH {
             let  mut colors: Vec<Pixel> = vec!();
             // Uniform 9 samples per pixel SSAA
             for i in 0..9 {
                 let u = (x as f32 + ((i%4) as f32 * 0.166 - 0.5)) / WIDTH as f32; // Screen x
                 let v = (y as f32 + ((i/4) as f32 * 0.166 - 0.5)) / HEIGHT as f32; // Screen y
                 let r = Ray::new(origin, lower_left_corner + horizontal*u + vertical*v);
-                colors.push(if s.hit(&r) {red} else {color(&r)})
+                colors.push(color(&r))
             }
-            pixels[HEIGHT-y].push(average(&colors));
+            pixels[HEIGHT-y-1].push(average(&colors));
         } 
     }
     write_ppm(pixels);

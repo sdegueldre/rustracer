@@ -9,7 +9,7 @@ impl Pixel {
     pub fn new(r: f32, g: f32, b: f32) -> Pixel {
         Pixel {r: r, g: g, b: b}
     }
-    
+
     pub fn ppm(&self) -> String {
         format!("{} {} {}", (self.r*255.0).floor(), (self.g*255.0).floor(), (self.b*255.0).floor())
     }
