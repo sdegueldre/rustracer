@@ -8,17 +8,44 @@ use rustracer::hitlist::HitList;
 fn color(r: &Ray, nb_bounce: u32) -> Pixel {
     const n_samples: u32 = 50;
     let white_vector = Vec3::new(1.0, 1.0, 1.0);
-    let sky_color = Vec3::new(0.5, 0.7, 1.0);
+    let sky_color = Vec3::new(1.0, 1.0, 1.0);
 
     let hitlist = HitList {
         items: vec![
             Box::new(Sphere {
-                center: Vec3::new(0.0, 0.0, -1.0),
-                radius: 0.5,
+                center: Vec3::new(0.0, -0.25, -1.0),
+                radius: 0.2,
+                color: Pixel::new(1.0, 0.05, 0.01),
             }),
             Box::new(Sphere {
-                center: Vec3::new(0.0, -100.5, -1.0),
-                radius: 100.0,
+                center: Vec3::new(0.25, 0.25, -1.0),
+                radius: 0.4,
+                color: Pixel::new(1.0, 0.05, 0.01),
+            }),
+            Box::new(Sphere {
+                center: Vec3::new(-0.25, 0.25, -1.0),
+                radius: 0.4,
+                color: Pixel::new(1.0, 0.05, 0.01),
+            }),
+            Box::new(Sphere {
+                center: Vec3::new(0.125, -0.08, -1.0),
+                radius: 0.25,
+                color: Pixel::new(1.0, 0.05, 0.01),
+            }),
+            Box::new(Sphere {
+                center: Vec3::new(-0.125, -0.08, -1.0),
+                radius: 0.25,
+                color: Pixel::new(1.0, 0.05, 0.01),
+            }),
+            Box::new(Sphere {
+                center: Vec3::new(0.0, -10000.45, -1.0),
+                radius: 10000.0,
+                color: Pixel::new(1.0, 1.0, 1.0),
+            }),
+            Box::new(Sphere {
+                center: Vec3::new(0.0, 0.0, -10001.5),
+                radius: 10000.0,
+                color: Pixel::new(1.0, 1.0, 1.0),
             }),
         ],
     };
@@ -26,7 +53,7 @@ fn color(r: &Ray, nb_bounce: u32) -> Pixel {
 
     let hit = hitlist.hit(&r);
     if hit.hit {
-        if nb_bounce > 5 {
+        if nb_bounce > 2 {
             return Pixel::new(0.0, 0.0, 0.0);
         }
         let hit_point = r.point_at(hit.t_value);
@@ -35,10 +62,10 @@ fn color(r: &Ray, nb_bounce: u32) -> Pixel {
             let bounce_ray = Ray::new(hit_point, hit.normal + random_unit_vector());
             colors.push(color(&bounce_ray, nb_bounce + 1));
         }
-        return 0.5 * average(&colors);
+        return hit.color * average(&colors);
     } else {
         let t = 0.5*(r.direction.y + 1.0);
-        let color_vector = white_vector*(1.0-t) + sky_color*t;
+        let color_vector = sky_color;
         return Pixel::new(color_vector.x, color_vector.y, color_vector.z)
     }
 }
@@ -50,7 +77,7 @@ fn main() {
     let lower_left_corner = Vec3::new(-1.920, -1.080, -1.0);
     let horizontal = Vec3::new(1.920 * 2.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 1.080 * 2.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 1.0);
 
     let mut pixels: Vec<Vec<Pixel>> = vec!();
     for y in (0..HEIGHT).rev() {
@@ -62,7 +89,7 @@ fn main() {
             //     let u = (x as f32 + ((i%4) as f32 * 0.166 - 0.5)) / WIDTH as f32; // Screen x
             //     let v = (y as f32 + ((i/4) as f32 * 0.166 - 0.5)) / HEIGHT as f32; // Screen y
             //     let r = Ray::new(origin, lower_left_corner + horizontal*u + vertical*v);
-            //     colors.push(color(&r))
+            //     colors.push(color(&r, 0))
             // }
             // pixels[HEIGHT-y-1].push(average(&colors));
             let u = x as f32 / WIDTH as f32; // Screen x

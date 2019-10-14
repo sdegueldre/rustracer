@@ -28,3 +28,10 @@ impl Mul<Pixel> for f32 {
         Pixel::new(self * col.r, self * col.g, self * col.b)
     }
 }
+
+impl Mul<Pixel> for Pixel {
+    type Output = Pixel;
+    fn mul(self, col: Pixel) -> Pixel {
+        Pixel::new(self.r * col.r, self.g * col.g, self.b * col.b)
+    }
+}
